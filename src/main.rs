@@ -1,9 +1,8 @@
 #![cfg_attr(feature = "nightly", feature(panic_payload_as_str))]
-
+#![allow(unused_variables)]
 use clap::{Parser, ValueEnum};
 use crossterm::style::Stylize;
 use log::{debug, error, info, LevelFilter};
-use rustversion::nightly;
 pub mod commands;
 pub mod panic;
 #[derive(Debug, ValueEnum, Clone, Copy, PartialEq, Eq)]

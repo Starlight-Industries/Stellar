@@ -1,15 +1,13 @@
 use backtrace::Backtrace;
-use colored::Colorize;
+use crossterm::style::Stylize;
 use regex::Regex;
-pub mod pastebin;
+// pub mod pastebin;
 use std::{fmt::Write as FmtWrite, panic::PanicHookInfo};
 static INIT: parking_lot::Once = parking_lot::Once::new();
 
 //#[cfg(not(debug_assertions))]
 pub fn set_panic_hook() {
     use std::io::Write;
-
-    use colored::Colorize;
 
     INIT.call_once(|| {
         let default_hook = std::panic::take_hook();

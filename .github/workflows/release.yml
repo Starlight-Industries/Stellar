@@ -63,11 +63,28 @@ jobs:
           args: --release --target ${{ matrix.target }}
         env:
           CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
-      - name: 📦 Prepare binary
+      - name: 📦 Prepare binary and checksum
         run: |
-          chmod +x target/${{ matrix.target }}/release/stellar${{ matrix.file_extension }}
-          mkdir -p release
-          zip release/${{ matrix.binary_name }} target/${{ matrix.target }}/release/stellar${{ matrix.file_extension }}
+          # Create temp directory for zip contents
+          mkdir -p temp_release
+          # Copy binary to temp directory
+          cp target/${{ matrix.target }}/release/stellar${{ matrix.file_extension }} temp_release/stellar${{ matrix.file_extension }}
+          chmod +x temp_release/stellar${{ matrix.file_extension }}
+          # Create SHA256 checksum
+          cd temp_release
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            certutil -hashfile stellar${{ matrix.file_extension }} SHA256 > stellar.sha256
+            # Remove certutil's extra output, keeping only the hash
+            sed -i '1d' stellar.sha256
+            sed -i '2d' stellar.sha256
+          else
+            shasum -a 256 stellar${{ matrix.file_extension }} > stellar.sha256
+          fi
+          # Create zip with both files at root level
+          mkdir -p ../release
+          zip ../release/${{ matrix.binary_name }} stellar${{ matrix.file_extension }} stellar.sha256
+          cd ..
+          rm -rf temp_release
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:

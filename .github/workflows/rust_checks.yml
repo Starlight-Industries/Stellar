@@ -1,17 +1,52 @@
-name: Unit tests, linting, and formatting
-on: [push]
+name: Code Quality & Tests 🚀
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+    branches: ["main", "master"]
+
+env:
+  CARGO_TERM_COLOR: always
+
 jobs:
-  checks:
-    runs-on: ubuntu-latest
+  check:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Update Rust
-        run: |
-          rustup override set stable
-          rustup update stable
-      - name: Run tests
-        run: cargo test
-      - name: Lint
-        run: cargo clippy
-      - name: Check formatting
-        run: cargo fmt --check
+      - name: 📥 Clone repository
+        uses: actions/checkout@v3
+
+      - name: 🔧 Install stable Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          components: clippy
+          profile: minimal
+
+      - name: 🔧 Install nightly Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          components: rustfmt
+          profile: minimal
+
+      - name: 🎨 Check formatting
+        uses: actions-rs/cargo@v1
+        with:
+          command: +nightly fmt
+          args: --all -- --check
+
+      - name: 🔍 Run Clippy
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: -- -D warnings
+
+      - name: 🧪 Run tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: test

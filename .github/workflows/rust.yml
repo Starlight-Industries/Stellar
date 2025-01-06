@@ -74,10 +74,10 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: stellar-${{ runner.os }}-${{ matrix.arch }}-bin
-          path: target/${{ matrix.target }}/release/stellar*
+          path: ${{ runner.os == 'Windows' && 'target/${{ matrix.target }}/release/stellar.exe' || 'target/${{ matrix.target }}/release/stellar' }}
 
       - name: 🚀 Create GitHub release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v1
         with:
-          files: target/${{ matrix.target }}/release/stellar*
+          files: target/${{ matrix.target }}/release/stellar

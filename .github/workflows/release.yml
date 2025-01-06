@@ -18,10 +18,16 @@ jobs:
         include:
           - target: x86_64-unknown-linux-musl
             os: ubuntu-latest
+            os_name: linux
+            architecture: x86_64
           - target: x86_64-apple-darwin
             os: macos-latest
+            os_name: macos
+            architecture: x86_64
           - target: x86_64-pc-windows-msvc
             os: windows-latest
+            os_name: windows
+            architecture: x86_64
             file_extension: .exe
 
     runs-on: ${{ matrix.os }}
@@ -44,20 +50,20 @@ jobs:
       - name: Build
         run: cargo build --release --target ${{ matrix.target }}
 
-      - name: Create Archive Folder
-        run: mkdir ${{ runner.os }}
+      - name: Prepare Artifact Folder
+        run: mkdir -p artifacts
 
       - name: Copy Artifact
-        run: cp target/${{ matrix.target }}/release/${{ env.binary_name }} ${{ runner.os }}
+        run: cp target/${{ matrix.target }}/release/${{ env.binary_name }} artifacts/stellar-${{ matrix.os_name }}-${{ matrix.architecture }}${{ matrix.file_extension }}
 
       - name: Create Tar Archive
-        run: tar -czf ${{ runner.os }}.tgz ${{ runner.os }}
+        run: tar -czf stellar-${{ matrix.os_name }}-${{ matrix.architecture }}.tgz -C artifacts .
 
       - name: Store Archive
         uses: actions/upload-artifact@v4
         with:
-          name: ${{runner.os}}
-          path: ${{ runner.os }}.tgz
+          name: stellar-${{ matrix.os_name }}-${{ matrix.architecture }}
+          path: stellar-${{ matrix.os_name }}-${{ matrix.architecture }}.tgz
 
   create-release:
     needs: [build-artifacts]
@@ -71,6 +77,9 @@ jobs:
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "Linux/Linux.tgz,macOS/macOS.tgz,Windows/Windows.tgz"
+          artifacts: |
+            stellar-linux-x86_64.tgz,
+            stellar-macos-x86_64.tgz,
+            stellar-windows-x86_64.tgz
           tag: ${{ github.ref_name }}
           release_name: Release ${{ github.ref_name }}

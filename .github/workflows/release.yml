@@ -8,7 +8,7 @@ on:
         required: true
   push:
     tags:
-      - "v*.*.*" # Matches semver-like tags (e.g., v0.1.0)
+      - "v*.*.*"
 
 jobs:
   build-artifacts:
@@ -29,41 +29,40 @@ jobs:
             os_name: windows
             architecture: x86_64
             file_extension: .exe
-
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.target }}
     env:
       binary_name: stellar${{ matrix.file_extension }}
-
     steps:
       - uses: actions/checkout@v4
-
       - uses: Swatinem/rust-cache@v2
-
       - name: Install host target
         run: rustup target add ${{ matrix.target }}
-
       - name: Install musl-tools
         if: ${{ matrix.target == 'x86_64-unknown-linux-musl' }}
         run: sudo apt-get install -y musl-tools
-
       - name: Build
         run: cargo build --release --target ${{ matrix.target }}
-
+      - name: List Files After Build
+        run: ls -R target/${{ matrix.target }}/release
       - name: Prepare Artifact Folder
         run: mkdir -p artifacts
-
       - name: Copy Artifact
-        run: cp target/${{ matrix.target }}/release/${{ env.binary_name }} artifacts/stellar-${{ matrix.os_name }}-${{ matrix.architecture }}${{ matrix.file_extension }}
-
+        run: |
+          cp target/${{ matrix.target }}/release/${{ env.binary_name }} artifacts/stellar-${{ matrix.os_name }}-${{ matrix.architecture }}${{ matrix.file_extension }}
+          ls -l artifacts # Debugging: List the artifact directory after copying files
       - name: Create Tar Archive
-        run: tar -czf artifacts/stellar-${{ matrix.os_name }}-${{ matrix.architecture }}.tar.gz -C artifacts stellar-${{ matrix.os_name }}-${{ matrix.architecture }}${{ matrix.file_extension }}
-
+        run: |
+          tar -czf artifacts/stellar-${{ matrix.os_name }}-${{ matrix.architecture }}.tar.gz -C artifacts stellar-${{ matrix.os_name }}-${{ matrix.architecture }}${{ matrix.file_extension }}
+          ls -l artifacts # Debugging: List the artifact directory after creating tar file
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: stellar-${{ matrix.os_name }}-${{ matrix.architecture }}
           path: artifacts/stellar-${{ matrix.os_name }}-${{ matrix.architecture }}.tar.gz
+      - name: List Artifacts in Upload Step
+        run: |
+          ls -l artifacts # Debugging: Verify the artifact before uploading
 
   create-release:
     needs: [build-artifacts]
@@ -73,31 +72,43 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-
       - name: Download Artifacts
         uses: actions/download-artifact@v4
         with:
           name: stellar-linux-x86_64
           path: ./artifacts
-
       - name: Download macOS Artifact
         uses: actions/download-artifact@v4
         with:
           name: stellar-macos-x86_64
           path: ./artifacts
-
       - name: Download Windows Artifact
         uses: actions/download-artifact@v4
         with:
           name: stellar-windows-x86_64
           path: ./artifacts
-
+      - name: List Artifacts After Download
+        run: ls -l ./artifacts
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
           artifacts: |
-            ./artifacts/stellar-linux-x86_64.tar.gz,
-            ./artifacts/stellar-macos-x86_64.tar.gz,
-            ./artifacts/stellar-windows-x86_64.tar.gz
+            ${{ github.workspace }}/artifacts/stellar-linux-x86_64.tar.gz,
+            ${{ github.workspace }}/artifacts/stellar-macos-x86_64.tar.gz,
+            ${{ github.workspace }}/artifacts/stellar-windows-x86_64.tar.gz
           tag: ${{ github.ref_name }}
           release_name: Release ${{ github.ref_name }}
+          generateReleaseNotes: false
+          makeLatest: true
+          omitBody: false
+          omitBodyDuringUpdate: false
+          omitDraftDuringUpdate: false
+          omitName: false
+          omitNameDuringUpdate: false
+          omitPrereleaseDuringUpdate: false
+          removeArtifacts: false
+          replacesArtifacts: true
+          skipIfReleaseExists: false
+          updateOnlyUnreleased: false
+      - name: Verify Release Files
+        run: ls -l ${{ github.workspace }}/artifacts

@@ -5,6 +5,10 @@ on:
     tags: ["v*"]
   pull_request:
     branches: ["main", "master"]
+
+permissions:
+  contents: write
+
 env:
   CARGO_TERM_COLOR: always
 jobs:
@@ -66,8 +70,8 @@ jobs:
           CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
           QEMU_LD_PREFIX: /usr/aarch64-linux-gnu
 
-      - name: 📦 Prepare artifact
-        id: prepare_artifact
+      - name: 📝 Rename binary
+        id: rename
         run: |
           binary_name="stellar"
           if [ "${{ runner.os }}" == "Windows" ]; then
@@ -75,20 +79,26 @@ jobs:
           fi
 
           cd target/${{ matrix.target }}/release
-          tar -czf "../../../stellar-${{ matrix.os }}-${{ matrix.arch }}.tar.gz" "$binary_name"
-          echo "archive_path=stellar-${{ matrix.os }}-${{ matrix.arch }}.tar.gz" >> $GITHUB_OUTPUT
+          mv "$binary_name" "stellar-${{ matrix.os }}-${{ matrix.arch }}"
+          if [ "${{ runner.os }}" == "Windows" ]; then
+            echo "binary_name=stellar-${{ matrix.os }}-${{ matrix.arch }}.exe" >> $GITHUB_OUTPUT
+          else
+            echo "binary_name=stellar-${{ matrix.os }}-${{ matrix.arch }}" >> $GITHUB_OUTPUT
+          fi
 
       - name: 📦 Upload artifacts
         uses: actions/upload-artifact@v3
         with:
           name: stellar-${{ matrix.os }}-${{ matrix.arch }}
-          path: ${{ steps.prepare_artifact.outputs.archive_path }}
+          path: target/${{ matrix.target }}/release/${{ steps.rename.outputs.binary_name }}
           if-no-files-found: error
 
   release:
     needs: build
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: 📥 Download all artifacts
         uses: actions/download-artifact@v3
@@ -98,7 +108,7 @@ jobs:
       - name: 🚀 Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          files: artifacts/**/*.tar.gz
+          files: artifacts/**/*
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

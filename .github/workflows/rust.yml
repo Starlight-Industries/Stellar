@@ -96,12 +96,17 @@ jobs:
       - name: 📥 Clone repository
         uses: actions/checkout@v3
 
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: stellar-${{ runner.os }}-${{ matrix.arch }}-bin
+          path: ./artifacts
+
       - name: Create GitHub Release 🚀
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
-          files: |
-            target/${{ matrix.target }}/release/stellar
+          files: ./artifacts/**/stellar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

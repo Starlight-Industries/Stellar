@@ -32,25 +32,19 @@ jobs:
           - os: macos-latest
             arch: aarch64
             target: aarch64-apple-darwin
-          # - os: windows-latest
-          #   arch: x86_64
-          #   target: x86_64-pc-windows-msvc
-          # - os: windows-latest
-          #   arch: aarch64
-          #   target: aarch64-pc-windows-msvc
     runs-on: ${{ matrix.os }}
 
     steps:
       - name: 📥 Clone repository
         uses: actions/checkout@v3
 
-      - name: 🛠️ Install cross-compilation dependencies (Ubuntu AMD)
+      - name: 🛠️ Install cross-compilation dependencies (Ubuntu)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu qemu-user
 
-      - name: 🛠️ Install cross-compilation dependencies (macOS🍎)
+      - name: 🛠️ Install cross-compilation dependencies (macOS)
         if: runner.os == 'macOS'
         run: |
           brew install FiloSottile/musl-cross/musl-cross
@@ -63,15 +57,8 @@ jobs:
           target: ${{ matrix.target }}
           profile: minimal
 
-      # - name: 🛠️ Install cross-compilation dependencies (Ubuntu ARM)
-      #   if: matrix.target == 'aarch64-unknown-linux-gnu'
-      #   run: |
-      #     env CROSS_CONTAINER_IN_CONTAINER=true
-      #     cargo install cross
-
       - name: 🏗️ Build
         uses: actions-rs/cargo@v1
-        # if: matrix.target != 'aarch64-unknown-linux-gnu'
         with:
           command: build
           args: --release --target ${{ matrix.target }}
@@ -95,30 +82,14 @@ jobs:
         with:
           path: release
 
-      - name: Create GitHub release ✈️
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref_name }}
-          release_name: Release ${{ github.ref_name }}
-          body: |
-            This is the release for version ${{ github.ref_name }}.
-          draft: false
-          prerelease: false
-
-      - name: Zip all binaries 📥
-        run: |
-          find release -type f ! -name "*.d" -exec sh -c 'cp "$1" "$(dirname "$1" | xargs basename)_$(basename "$1")"' _ {} \;
-          chmod +x *apple-darwin*
-          chmod +x *linux-gnu*
+      - name: Verify downloaded files
+        run: ls -R release
 
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: stellar*
-          tag: main
+          file: release/stellar*
+          tag: ${{ github.ref_name }}
           overwrite: true
           file_glob: true

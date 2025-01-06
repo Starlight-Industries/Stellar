@@ -6,7 +6,6 @@ use crossterm::style::Stylize;
 use regex::Regex;
 static INIT: parking_lot::Once = parking_lot::Once::new();
 
-//#[cfg(not(debug_assertions))]
 pub fn set_panic_hook() {
     use std::io::Write;
 

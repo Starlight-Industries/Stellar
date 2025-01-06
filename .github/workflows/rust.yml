@@ -84,8 +84,11 @@ jobs:
           cd artifacts
           for dir in stellar-*; do
             if [ -d "$dir" ]; then
-              newname=$(echo $dir | sed 's/ubuntu/linux/')
-              mv "$dir/stellar" "$newname"
+              # Check if the directory name contains "ubuntu" before renaming
+              if [[ "$dir" == *"ubuntu"* ]]; then
+                newname=$(echo $dir | sed 's/ubuntu/linux/')
+                mv "$dir/stellar" "$newname"
+              fi
             fi
           done
       - name: 🚀 Create GitHub Release

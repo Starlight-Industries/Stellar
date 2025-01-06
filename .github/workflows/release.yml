@@ -82,27 +82,14 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           path: release
-      - name: Create GitHub release ✈️
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ github.ref_name }}
-          release_name: Release ${{ github.ref_name }}
+          files: release/*/*.zip
+          name: Release ${{ github.ref_name }}
           body: |
             This is the release for version ${{ github.ref_name }}.
           draft: false
           prerelease: false
-      - name: Upload Release Assets 📤
-        run: |
-          for zip in release/*/*.zip; do
-            filename=$(basename $zip)
-            echo "Uploading $filename..."
-            curl \
-              -X POST \
-              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              -H "Content-Type: application/zip" \
-              --data-binary @"$zip" \
-              "${{ steps.create_release.outputs.upload_url }}?name=$filename"
-          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

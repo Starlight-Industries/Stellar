@@ -65,7 +65,7 @@ jobs:
       - name: 📦 Upload artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: stellar-${{ replace(matrix.os, 'ubuntu', 'linux') }}-${{ matrix.arch }}
+          name: stellar-${{ matrix.os }}-${{ matrix.arch }}
           path: target/${{ matrix.target }}/release/stellar
           if-no-files-found: error
   release:
@@ -84,8 +84,8 @@ jobs:
           cd artifacts
           for dir in stellar-*; do
             if [ -d "$dir" ]; then
-              binname=$(echo $dir | sed 's/ubuntu/linux/')
-              mv "$dir/stellar" "$binname"
+              newname=$(echo $dir | sed 's/ubuntu/linux/')
+              mv "$dir/stellar" "$newname"
             fi
           done
       - name: 🚀 Create GitHub Release

@@ -3,24 +3,6 @@
 version = 4
 
 [[package]]
-name = "Stellar"
-version = "0.1.0"
-dependencies = [
- "backtrace",
- "clap",
- "colored",
- "crossterm 0.28.1",
- "inquire",
- "libstellar",
- "log",
- "parking_lot",
- "regex",
- "rich-logger",
- "rustversion",
- "version_check",
-]
-
-[[package]]
 name = "addr2line"
 version = "0.24.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -660,6 +642,24 @@ name = "smallvec"
 version = "1.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3c5e1a9a646d36c3599cd173a41282daf47c44583ad367b8e6837255952e5c67"
+
+[[package]]
+name = "stellar"
+version = "0.1.0"
+dependencies = [
+ "backtrace",
+ "clap",
+ "colored",
+ "crossterm 0.28.1",
+ "inquire",
+ "libstellar",
+ "log",
+ "parking_lot",
+ "regex",
+ "rich-logger",
+ "rustversion",
+ "version_check",
+]
 
 [[package]]
 name = "strsim"

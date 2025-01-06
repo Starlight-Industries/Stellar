@@ -1,9 +1,9 @@
 name: Code Quality & Tests 🚀
 on:
   push:
-    branches: ["main", "master"]
+    branches: ["main"]
   pull_request:
-    branches: ["main", "master"]
+    branches: ["main"]
 
 env:
   CARGO_TERM_COLOR: always
@@ -35,10 +35,8 @@ jobs:
           profile: minimal
 
       - name: 🎨 Check formatting
-        uses: actions-rs/cargo@v1
-        with:
-          command: +nightly fmt
-          args: --all -- --check
+        run: |
+          cargo +nightly fmt --all -- --check
 
       - name: 🔍 Run Clippy
         uses: actions-rs/cargo@v1

@@ -24,20 +24,32 @@ jobs:
         include:
           - arch: x86_64
             target: x86_64-unknown-linux-gnu
+            binary_name: stellar-linux-x86_64.zip
+            file_extension: ""
           - os: macos-latest
             arch: x86_64
             target: x86_64-apple-darwin
+            binary_name: stellar-macos-x86_64.zip
+            file_extension: ""
           - arch: aarch64
             target: aarch64-unknown-linux-gnu
+            binary_name: stellar-linux-aarch64.zip
+            file_extension: ""
           - os: macos-latest
             arch: aarch64
             target: aarch64-apple-darwin
+            binary_name: stellar-macos-aarch64.zip
+            file_extension: ""
           - os: windows-latest
             arch: x86_64
             target: x86_64-pc-windows-msvc
+            binary_name: stellar-windows-x86_64.zip
+            file_extension: .exe
           - os: windows-latest
             arch: aarch64
             target: aarch64-pc-windows-msvc
+            binary_name: stellar-windows-aarch64.zip
+            file_extension: .exe
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -71,11 +83,17 @@ jobs:
         env:
           CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
 
+      - name: 📦 Prepare binary
+        run: |
+          chmod +x target/${{ matrix.target }}/release/stellar${{ matrix.file_extension }}
+          mkdir -p release
+          zip release/${{ matrix.binary_name }} target/${{ matrix.target }}/release/stellar${{ matrix.file_extension }}
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ matrix.target }}
-          path: target/${{ matrix.target }}/release/stellar*
+          name: ${{ matrix.binary_name }}
+          path: release/${{ matrix.binary_name }}
 
   release:
     runs-on: ubuntu-latest
@@ -101,19 +119,12 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Zip all binaries 📥
-        run: |
-          find release -type f ! -name "*.d" -exec sh -c 'cp "$1" "$(dirname "$1" | xargs basename)_$(basename "$1")"' _ {} \;
-          chmod +x *apple-darwin*
-          chmod +x *linux-gnu*
-          zip -r stellar.zip *stellar*
-
-      - name: Upload zip to release 📤
+      - name: Upload zip files to release 📤
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: stellar.zip
-          asset_name: stellar.zip
+          asset_path: release/${{ matrix.binary_name }}
+          asset_name: ${{ matrix.binary_name }}
           asset_content_type: application/zip

@@ -70,14 +70,15 @@ jobs:
           CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
           QEMU_LD_PREFIX: /usr/aarch64-linux-gnu
 
-      - name: Set binary path 📂
+      - name: Set binary path
         id: set_path
         run: |
+          binary_path="target/${{ matrix.target }}/release/stellar"
           if [ "${{ runner.os }}" == "Windows" ]; then
-            echo "path=target/${{ matrix.target }}/release/stellar.exe" >> $GITHUB_ENV
-          else
-            echo "path=target/${{ matrix.target }}/release/stellar" >> $GITHUB_ENV
+            binary_path="target/${{ matrix.target }}/release/stellar.exe"
           fi
+          echo "path=$binary_path" >> $GITHUB_ENV
+          echo "binary_path=$binary_path" >> $GITHUB_OUTPUT
 
       - name: 📦 Upload artifacts
         uses: actions/upload-artifact@v3
@@ -110,10 +111,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload release assets 📦
+      - name: Upload release assets
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ env.path }}
+          asset_path: ${{ env.binary_path }}
           asset_name: stellar-${{ runner.os }}-${{ matrix.arch }}.tar.gz
           asset_content_type: application/octet-stream

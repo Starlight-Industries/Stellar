@@ -1,0 +1,83 @@
+name: Build stellar 💫
+
+on:
+  push:
+    branches: ["main", "master"]
+    tags: ["v*"] # Trigger on tags starting with "v"
+  pull_request:
+    branches: ["main", "master"]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        arch: [x86_64, aarch64]
+        include:
+          - arch: x86_64
+            target: x86_64-unknown-linux-gnu
+          - os: macos-latest
+            arch: x86_64
+            target: x86_64-apple-darwin
+          - arch: aarch64
+            target: aarch64-unknown-linux-gnu
+          - os: macos-latest
+            arch: aarch64
+            target: aarch64-apple-darwin
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: 📥 Clone repository
+        uses: actions/checkout@v3
+
+      - name: 🛠️ Install cross-compilation dependencies (Ubuntu🐧)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu qemu-user
+
+      - name: 🛠️ Install cross-compilation dependencies (macOS🍎)
+        if: runner.os == 'macOS'
+        run: |
+          brew install FiloSottile/musl-cross/musl-cross
+
+      - name: 🔧 Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+          target: ${{ matrix.target }}
+          profile: minimal
+
+      - name: 🏗️ Build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release --target ${{ matrix.target }}
+        env:
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
+
+      - name: 🧪 Run tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --target ${{ matrix.target }}
+        env:
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
+          QEMU_LD_PREFIX: /usr/aarch64-linux-gnu
+
+      - name: 📦 Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: stellar-${{ runner.os }}-${{ matrix.arch }}-bin
+          path: target/${{ matrix.target }}/release/stellar*
+
+      - name: 🚀 Create GitHub release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: target/${{ matrix.target }}/release/stellar*

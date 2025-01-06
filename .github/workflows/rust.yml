@@ -1,35 +1,31 @@
 name: Build stellar 💫
-
 on:
   push:
     branches: ["main", "master"]
     tags: ["v*"]
   pull_request:
     branches: ["main", "master"]
-
 env:
   CARGO_TERM_COLOR: always
-
 jobs:
   build:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        arch: [x86_64, aarch64]
         include:
-          - arch: x86_64
+          - os: ubuntu-latest
+            arch: x86_64
             target: x86_64-unknown-linux-gnu
+          - os: ubuntu-latest
+            arch: aarch64
+            target: aarch64-unknown-linux-gnu
           - os: macos-latest
             arch: x86_64
             target: x86_64-apple-darwin
-          - arch: aarch64
-            target: aarch64-unknown-linux-gnu
           - os: macos-latest
             arch: aarch64
             target: aarch64-apple-darwin
     runs-on: ${{ matrix.os }}
-
     steps:
       - name: 📥 Clone repository
         uses: actions/checkout@v3
@@ -70,51 +66,39 @@ jobs:
           CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
           QEMU_LD_PREFIX: /usr/aarch64-linux-gnu
 
-      - name: Set binary path
-        id: set_path
+      - name: 📦 Prepare artifact
+        id: prepare_artifact
         run: |
-          binary_path="target/${{ matrix.target }}/release/stellar"
+          binary_name="stellar"
           if [ "${{ runner.os }}" == "Windows" ]; then
-            binary_path="target/${{ matrix.target }}/release/stellar.exe"
+            binary_name="stellar.exe"
           fi
-          echo "path=$binary_path" >> $GITHUB_ENV
-          echo "binary_path=$binary_path" >> $GITHUB_OUTPUT
+
+          cd target/${{ matrix.target }}/release
+          tar -czf "../../../stellar-${{ matrix.os }}-${{ matrix.arch }}.tar.gz" "$binary_name"
+          echo "archive_path=stellar-${{ matrix.os }}-${{ matrix.arch }}.tar.gz" >> $GITHUB_OUTPUT
 
       - name: 📦 Upload artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: stellar-${{ runner.os }}-${{ matrix.arch }}-bin
-          path: ${{ env.path }}
-          if-no-files-found: warn
-          include-hidden-files: false
+          name: stellar-${{ matrix.os }}-${{ matrix.arch }}
+          path: ${{ steps.prepare_artifact.outputs.archive_path }}
+          if-no-files-found: error
 
   release:
     needs: build
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
-
     steps:
-      - name: 📥 Clone repository
-        uses: actions/checkout@v3
-
-      - name: Download build artifacts
+      - name: 📥 Download all artifacts
         uses: actions/download-artifact@v3
         with:
-          name: stellar-${{ runner.os }}-*-bin
-          path: ./artifacts
+          path: artifacts
 
-      - name: Create GitHub Release 🚀
-        id: create_release
+      - name: 🚀 Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          files: ./artifacts/**/stellar
+          files: artifacts/**/*.tar.gz
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload release assets
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ env.binary_path }}
-          asset_name: stellar-${{ runner.os }}-${{ matrix.arch }}.tar.gz
-          asset_content_type: application/octet-stream

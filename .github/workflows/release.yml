@@ -2,13 +2,8 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
-  release:
-    types: [released]
-  pull_request:
-    branches:
-      - main
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
 
 jobs:
   build:
@@ -45,11 +40,6 @@ jobs:
           - {
               displayName: 64-bit macOS,
               rustTarget: x86_64-apple-darwin,
-              runner: "macos-latest",
-            }
-          - {
-              displayName: 64-bit macOS,
-              rustTarget: aarch64-apple-darwin,
               runner: "macos-latest",
             }
 

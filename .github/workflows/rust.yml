@@ -100,7 +100,7 @@ jobs:
       - name: Download build artifacts
         uses: actions/download-artifact@v3
         with:
-          name: stellar-${{ runner.os }}-${{ matrix.arch }}-bin
+          name: stellar-${{ runner.os }}-*-bin
           path: ./artifacts
 
       - name: Create GitHub Release 🚀

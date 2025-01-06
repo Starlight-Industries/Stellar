@@ -36,7 +36,7 @@ jobs:
 
       - name: 🎨 Check formatting
         run: |
-          cargo +nightly fmt --all -- --check
+          cargo +nightly fmt -- --check
 
       - name: 🔍 Run Clippy
         uses: actions-rs/cargo@v1

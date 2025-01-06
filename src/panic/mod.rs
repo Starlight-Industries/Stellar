@@ -1,8 +1,9 @@
+// pub mod pastebin;
+use std::{fmt::Write as FmtWrite, panic::PanicHookInfo};
+
 use backtrace::Backtrace;
 use crossterm::style::Stylize;
 use regex::Regex;
-// pub mod pastebin;
-use std::{fmt::Write as FmtWrite, panic::PanicHookInfo};
 static INIT: parking_lot::Once = parking_lot::Once::new();
 
 //#[cfg(not(debug_assertions))]

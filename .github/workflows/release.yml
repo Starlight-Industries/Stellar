@@ -57,13 +57,13 @@ jobs:
         run: cp target/${{ matrix.target }}/release/${{ env.binary_name }} artifacts/stellar-${{ matrix.os_name }}-${{ matrix.architecture }}${{ matrix.file_extension }}
 
       - name: Create Tar Archive
-        run: tar -czf stellar-${{ matrix.os_name }}-${{ matrix.architecture }}.tgz -C artifacts .
+        run: tar -czf artifacts/stellar-${{ matrix.os_name }}-${{ matrix.architecture }}.tar.gz -C artifacts stellar-${{ matrix.os_name }}-${{ matrix.architecture }}${{ matrix.file_extension }}
 
-      - name: Store Archive
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: stellar-${{ matrix.os_name }}-${{ matrix.architecture }}
-          path: stellar-${{ matrix.os_name }}-${{ matrix.architecture }}.tgz
+          path: artifacts/stellar-${{ matrix.os_name }}-${{ matrix.architecture }}.tar.gz
 
   create-release:
     needs: [build-artifacts]
@@ -73,13 +73,31 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: stellar-linux-x86_64
+          path: ./artifacts
+
+      - name: Download macOS Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: stellar-macos-x86_64
+          path: ./artifacts
+
+      - name: Download Windows Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: stellar-windows-x86_64
+          path: ./artifacts
+
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
           artifacts: |
-            stellar-linux-x86_64.tgz,
-            stellar-macos-x86_64.tgz,
-            stellar-windows-x86_64.tgz
+            ./artifacts/stellar-linux-x86_64.tar.gz,
+            ./artifacts/stellar-macos-x86_64.tar.gz,
+            ./artifacts/stellar-windows-x86_64.tar.gz
           tag: ${{ github.ref_name }}
           release_name: Release ${{ github.ref_name }}

@@ -1,52 +1,58 @@
 name: Build stellar 💫
+
 on:
   push:
     branches: ["main", "master"]
-    tags: ["v*"]
+    tags: ["v*"] # Trigger on tags starting with "v"
   pull_request:
     branches: ["main", "master"]
-permissions:
-  contents: write
+
 env:
   CARGO_TERM_COLOR: always
+
 jobs:
   build:
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest, macos-latest]
+        arch: [x86_64, aarch64]
         include:
-          - os: ubuntu-latest
-            arch: x86_64
+          - arch: x86_64
             target: x86_64-unknown-linux-gnu
-          - os: ubuntu-latest
-            arch: aarch64
-            target: aarch64-unknown-linux-gnu
           - os: macos-latest
             arch: x86_64
             target: x86_64-apple-darwin
+          - arch: aarch64
+            target: aarch64-unknown-linux-gnu
           - os: macos-latest
             arch: aarch64
             target: aarch64-apple-darwin
     runs-on: ${{ matrix.os }}
+
     steps:
       - name: 📥 Clone repository
         uses: actions/checkout@v3
+
       - name: 🛠️ Install cross-compilation dependencies (Ubuntu🐧)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu qemu-user
+
       - name: 🛠️ Install cross-compilation dependencies (macOS🍎)
         if: runner.os == 'macOS'
         run: |
           brew install FiloSottile/musl-cross/musl-cross
+
       - name: 🔧 Install Rust
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: stable
+          toolchain: nightly
           override: true
           target: ${{ matrix.target }}
           profile: minimal
+
       - name: 🏗️ Build
         uses: actions-rs/cargo@v1
         with:
@@ -54,6 +60,7 @@ jobs:
           args: --release --target ${{ matrix.target }}
         env:
           CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
+
       - name: 🧪 Run tests
         uses: actions-rs/cargo@v1
         with:
@@ -62,39 +69,54 @@ jobs:
         env:
           CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
           QEMU_LD_PREFIX: /usr/aarch64-linux-gnu
+
+      - name: Set binary path
+        id: set_path
+        run: |
+          binary_path="target/${{ matrix.target }}/release/stellar"
+          if [ "${{ runner.os }}" == "Windows" ]; then
+            binary_path="target/${{ matrix.target }}/release/stellar.exe"
+          fi
+          echo "path=$binary_path" >> $GITHUB_ENV
+          echo "binary_path=$binary_path" >> $GITHUB_OUTPUT
+
       - name: 📦 Upload artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: stellar-${{ matrix.os }}-${{ matrix.arch }}
-          path: target/${{ matrix.target }}/release/stellar
-          if-no-files-found: error
+          name: stellar-${{ matrix.os }}-${{ matrix.arch }}-bin
+          path: ${{ env.path }}
+          if-no-files-found: warn
+          include-hidden-files: false
+
+      - name: Output binary path for release job
+        id: release_path
+        run: |
+          echo "release_path=${{ steps.set_path.outputs.binary_path }}" >> $GITHUB_ENV
+
   release:
     needs: build
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') # Trigger only on tags starting with 'v'
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+
     steps:
-      - name: 📥 Download all artifacts
+      - name: 📥 Clone repository
+        uses: actions/checkout@v3
+
+      - name: Download build artifacts
         uses: actions/download-artifact@v3
         with:
-          path: artifacts
-      - name: 🔄 Prepare release assets
+          name: stellar-${{ matrix.os }}-${{ matrix.arch }}-bin
+          path: ./artifacts
+
+      - name: Create a tarball for release (Linux and macOS)
         run: |
-          cd artifacts
-          for dir in stellar-*; do
-            if [ -d "$dir" ]; then
-              # Check if the directory name contains "ubuntu" before renaming
-              if [[ "$dir" == *"ubuntu"* ]]; then
-                newname=$(echo $dir | sed 's/ubuntu/linux/')
-                mv "$dir/stellar" "$newname"
-              fi
-            fi
-          done
-      - name: 🚀 Create GitHub Release
+          # Create a tarball with both the macOS and Linux binaries
+          tar -czf ./artifacts/stellar-${{ runner.os }}-${{ matrix.arch }}.tar.gz -C ./artifacts stellar
+
+      - name: Create GitHub Release 🚀
+        id: create_release
         uses: softprops/action-gh-release@v1
         with:
-          files: artifacts/stellar-*
-          generate_release_notes: true
+          files: ./artifacts/**/stellar-*.tar.gz # This will match both Linux and macOS tarballs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

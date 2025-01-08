@@ -1,8 +1,8 @@
 #![cfg_attr(feature = "nightly", feature(panic_payload_as_str))]
 #![allow(unused_variables)]
 use log::LevelFilter;
-pub mod panic;
 pub mod cli;
+pub mod panic;
 use cli::run_cli;
 
 fn main() {

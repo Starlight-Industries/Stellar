@@ -2,8 +2,7 @@ use clap::{Parser, ValueEnum};
 use log::{debug, error, info, LevelFilter};
 use crossterm::style::Stylize;
 pub mod commands;
-
-
+pub mod install;
 
 #[derive(Debug, ValueEnum, Clone, Copy, PartialEq, Eq)]
 #[non_exhaustive]
@@ -37,7 +36,7 @@ enum Commands {
     #[clap(alias = "i")]
     /// Install a Linux distribution
     Install {
-        /// The distrobution you would like to install to install
+        /// The distribution you would like to install to install
         distro: Option<Distro>,
         #[clap(short, long)]
         tui: bool,
@@ -49,7 +48,7 @@ fn match_distro(distro: Distro) {
     match distro {
         Distro::Arch => {
             info!("Installing Arch Linux");
-            commands::install::arch::install();
+            install::arch::install();
         }
         Distro::Debian => {
             info!("Installing Debian");

@@ -1,3 +1,5 @@
+mod pastebin;
+
 // pub mod pastebin;
 use std::{fmt::Write as FmtWrite, panic::PanicHookInfo};
 

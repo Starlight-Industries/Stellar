@@ -5,6 +5,4 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.95"
-sudo = "0.6.0"
-tempfile = "3.15.0"
-thiserror = "2.0.9"
+thiserror = "2.0.11"

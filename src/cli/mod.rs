@@ -1,8 +1,8 @@
 use clap::{Parser, ValueEnum};
 use log::{debug, error, info, LevelFilter};
 use crossterm::style::Stylize;
-pub mod commands;
-pub mod install;
+// pub mod commands;
+// pub mod install;
 
 #[derive(Debug, ValueEnum, Clone, Copy, PartialEq, Eq)]
 #[non_exhaustive]
@@ -48,7 +48,7 @@ fn match_distro(distro: Distro) {
     match distro {
         Distro::Arch => {
             info!("Installing Arch Linux");
-            install::arch::install();
+            // install::arch::install();
         }
         Distro::Debian => {
             info!("Installing Debian");
@@ -82,11 +82,11 @@ pub fn run_cli() {
                         "Select the distro you would like to install",
                         vec![Distro::Arch, Distro::Debian],
                     )
-                    .with_help_message(
-                        "You can use the arrow keys to navigate and press Enter to select",
-                    )
-                    .prompt()
-                    .expect("Failed to prompt");
+                        .with_help_message(
+                            "You can use the arrow keys to navigate and press Enter to select",
+                        )
+                        .prompt()
+                        .expect("Failed to prompt");
                     match_distro(distro);
                 }
             }
@@ -96,5 +96,5 @@ pub fn run_cli() {
             err.print().expect("Failed to print error");
         }
     }
-    
+
 }

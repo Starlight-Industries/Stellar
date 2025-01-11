@@ -1,10 +1,8 @@
-mod pastebin;
-
-// pub mod pastebin;
 use std::{fmt::Write as FmtWrite, panic::PanicHookInfo};
 
 use backtrace::Backtrace;
 use crossterm::style::Stylize;
+use log::info;
 use regex::Regex;
 static INIT: parking_lot::Once = parking_lot::Once::new();
 
@@ -46,18 +44,18 @@ pub fn set_panic_hook() {
                 std::process::exit(0);
             });
             let panic_msg = format!(
-"Stellar had a problem and crashed. To help us diagnose the problem you can send us a crash report.
+                "Stellar had a problem and crashed. To help us diagnose the problem you can send us a crash report.
 
 We have generated a report file at \"{}\". Submit an issue or email with the subject of \"Stellar Crash Report\" and include the report as an attachment.
 
 To submit the crash report:
 
-https://github.com/Stellar-Engine/Stellar/issues
+https://github.com/Starlight-industries/Stellar/issues
 
 We take privacy seriously, and do not perform any automated error collection. In order to improve the software, we rely on people to submit reports.
 
 Thank you kindly!",log_path.display());
-            println!("{}",panic_msg.red().bold());
+            eprintln!("{}",panic_msg.red().bold());
             print_reference(info).unwrap_or_else(|_| {
                 default_hook(info);
                 std::process::exit(0);

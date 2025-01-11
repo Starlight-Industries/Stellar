@@ -1,14 +1,31 @@
 #![cfg_attr(feature = "nightly", feature(panic_payload_as_str))]
-#![allow(unused_variables)]
-use log::LevelFilter;
-pub mod cli;
+#![forbid(unused_results)]
+#![cfg_attr(debug_assertions, allow(unused, dead_code))]
 pub mod panic;
-use cli::run_cli;
+pub mod cli;
+use log::{debug, error, info, trace};
+use crate::cli::run_cli;
+
 
 fn main() {
-    #[cfg(not(debug_assertions))]
-    panic::set_panic_hook();
+    let logger = rich_logger::init(log::LevelFilter::Info);
 
-    rich_logger::init(LevelFilter::Debug).expect("Failed to init logger");
+    match logger {
+        Ok(_) => (),
+        Err(e) => error!("Failed to initalize logger: {}", e),
+    }
+    #[cfg(not(debug_assertions))]
+    {
+        panic::set_panic_hook();
+        if rustversion::cfg!(nightly) {
+            info!("Hello, world!");
+        }
+    }
+    trace!("Happy Halloween!");
+    let distro = libstellar::env::current_distro();
+    match distro {
+        Ok(d) => info!("Distro: {}", d),
+        Err(e) => error!("Failed to determine distro: {}", e),
+    }
     run_cli();
 }

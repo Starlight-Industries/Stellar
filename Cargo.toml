@@ -1,28 +1,48 @@
-[workspace]
-members = ["libstellar"]
-
-
 [package]
 name = "stellar"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+authors = ["starlight-industries", "Caznix", "Eatmynerds"]
 
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
+libstellar.workspace = true
+anyhow = { version = "1" }
+clap = { version = "4.5.26", features = ["derive"] }
+log = "0.4.24"
+rich-logger = { version = "0.1.17", features = ["pretty_json"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
 backtrace = "0.3.74"
-clap = { version = "4.5.23", features = ["derive"] }
-colored = "2.2.0"
-crossterm = { default-features = false, version = "0.28.1" }
-inquire = "0.7.5"
-libstellar = { path = "./libstellar" }
-log = "0.4.22"
-parking_lot = "0.12.3"
 regex = "1.11.1"
-rich-logger = { version = "0.1.17" }
+parking_lot = "0.12.3"
 rustversion = "1.0.19"
+crossterm = "0.28.1"
+inquire = "0.7.5"
 
 [build-dependencies]
-version_check = "0.9"
+version_check = "0.9.5"
+
+# See more at https://github.com/johnthagen/min-sized-rust
+[profile.release]
+#codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true
 
 [features]
 default = []
 nightly = []
+
+
+[lints.rust]
+unsafe_code = "forbid"
+unused_results = "forbid"
+
+[workspace]
+members = ["libstellar"]
+
+[workspace.dependencies]
+libstellar = { path = "libstellar"}

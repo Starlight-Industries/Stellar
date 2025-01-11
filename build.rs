@@ -1,13 +1,11 @@
-use std::env;
-
 fn main() {
-    let rust_toolchain = env::var("RUSTUP_TOOLCHAIN").unwrap();
-    if rust_toolchain.starts_with("stable") {
-        // do nothing
-    } else if rust_toolchain.starts_with("nightly") {
-        //enable the 'nightly-features' feature flag
+    let is_nightly = version_check::is_feature_flaggable() == Some(true);
+
+    if is_nightly {
+        println!("cargo:warning=Building with nightly features enabled");
         println!("cargo:rustc-cfg=feature=\"nightly\"");
     } else {
-        eprintln!("cargo:Unexpected value for rustc toolchain");
+        // println!("cargo:rustc-cfg=not(nightly)");
+        println!("cargo:warning=Building with nightly features disabled");
     }
 }

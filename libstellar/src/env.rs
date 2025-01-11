@@ -25,7 +25,7 @@ pub enum Distro {
     Suse,
     /// Other will include unknown or independent Linux/Unix variants
     /// Such as NixOS or Void Linux.
-    /// 
+    ///
     /// Running ```is_supported()``` on the ```Other``` variant
     /// will return true, however; this will require custom instructions
     /// or more manual intervention than usually necessary

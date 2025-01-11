@@ -1,6 +1,6 @@
 use clap::{Parser, ValueEnum};
-use log::{debug, error, info, LevelFilter};
 use crossterm::style::Stylize;
+use log::{debug, error, info, LevelFilter};
 // pub mod commands;
 // pub mod install;
 
@@ -82,11 +82,11 @@ pub fn run_cli() {
                         "Select the distro you would like to install",
                         vec![Distro::Arch, Distro::Debian],
                     )
-                        .with_help_message(
-                            "You can use the arrow keys to navigate and press Enter to select",
-                        )
-                        .prompt()
-                        .expect("Failed to prompt");
+                    .with_help_message(
+                        "You can use the arrow keys to navigate and press Enter to select",
+                    )
+                    .prompt()
+                    .expect("Failed to prompt");
                     match_distro(distro);
                 }
             }
@@ -96,5 +96,4 @@ pub fn run_cli() {
             err.print().expect("Failed to print error");
         }
     }
-
 }

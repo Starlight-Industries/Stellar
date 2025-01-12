@@ -1,9 +1,9 @@
-use std::{fmt::Write as FmtWrite, panic::PanicHookInfo};
-use std::process::ExitCode;
 use backtrace::Backtrace;
 use crossterm::style::Stylize;
 use log::info;
 use regex::Regex;
+use std::process::ExitCode;
+use std::{fmt::Write as FmtWrite, panic::PanicHookInfo};
 static INIT: parking_lot::Once = parking_lot::Once::new();
 
 pub fn set_panic_hook() {

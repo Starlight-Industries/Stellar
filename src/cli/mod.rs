@@ -86,13 +86,13 @@ pub fn run_cli() {
                             }
                             Err(e) => {
                                 error!("Failed to parse distro: {}", e);
-                            },
+                            }
                         }
                     } else {
                         debug!("No distro was selected, prompting user");
                         let distro: Distro = inquire::Select::new(
                             "Select the distro you would like to install",
-                            Distro::All(),
+                            Distro::variants(),
                         )
                         .with_help_message(
                             "You can use the arrow keys to navigate and press Enter to select",

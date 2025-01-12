@@ -10,10 +10,6 @@ fn main() {
     #[cfg(not(debug_assertions))]
     {
         panic::set_panic_hook();
-        if rustversion::cfg!(nightly) {
-            info!("Hello, world!");
-        }
     }
     run_cli();
-    libstellar::bootstrap::arch::test();
 }

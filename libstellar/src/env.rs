@@ -39,6 +39,7 @@ impl FromStr for Distro {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "debian" => Ok(Distro::Debian),
+            "deb" => Ok(Distro::Debian),
             "ubuntu" => Ok(Distro::Debian),
             "arch" => Ok(Distro::Arch),
             "centos" => Ok(Distro::Redhat),
@@ -65,14 +66,21 @@ impl Distro {
             Distro::Other(_) => true,
         }
     }
-    pub fn All() -> Vec<Self> {
-        let vec = vec![
-            Distro::Debian,
-            Distro::Arch,
-            Distro::Redhat,
-            Distro::Suse,
-        ];
+    pub fn variants() -> Vec<Self> {
+        let vec = vec![Distro::Debian, Distro::Arch, Distro::Redhat, Distro::Suse];
         vec
+    }
+    pub fn is_available(&self) -> bool {
+        false
+    }
+    pub fn to_string_pretty(&self) -> String {
+        match self {
+            Distro::Debian => String::from("Debian"),
+            Distro::Arch => String::from("Arch Linux"),
+            Distro::Redhat => String::from("RedHat Linux"),
+            Distro::Suse => String::from("OpenSuse"),
+            Distro::Other(_) => String::from("Other Linux"),
+        }
     }
 }
 

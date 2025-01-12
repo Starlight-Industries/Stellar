@@ -1,5 +1,5 @@
 use thiserror::Error;
-
+struct Architecture {}
 struct Pacstrap {
     packages: Vec<String>,
 }
@@ -12,27 +12,22 @@ enum PacstrapError {
         closest_matches: Vec<String>,
         exact_message: String,
     },
+    #[error("the name \"{got}\" is not a valid package name")]
+    InvalidPackage { got: String, exact_message: String },
+    #[error("One or more repositories could not be reached{}",
+    match reason {
+        Some(reason) =>  ":".to_owned() + reason.as_str(),
+        None => "".to_string(),
+    })]
+    NetworkFailure { reason: Option<String> },
 }
 
-pub fn test() {
-    let mut test: Vec<String> = Vec::new();
-    for i in 0..50 {
-        test.push(format!("test #{}",{
-            let new = i + 1;
-            new
-        }));
-    }
-    let new_string = test.join("\n");
-    println!("{}", new_string);
-}
-impl super::Bootstrap for Pacstrap {
-    type Error = String;
-    fn bootstrap() {
-        todo!()
-    }
-    fn add_package() -> Result<(), Self::Error> {
-        todo!()
-    }
-}
-
-struct PacstrapBuilder;
+// impl super::Bootstrap for Pacstrap {
+//     fn bootstrap() {
+//         todo!()
+//     }
+//     fn add_package() -> Result<(), Self::Error> {
+//     Ok(())
+//
+//     }
+// }

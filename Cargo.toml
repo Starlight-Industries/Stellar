@@ -21,6 +21,7 @@ parking_lot = "0.12.3"
 rustversion = "1.0.19"
 crossterm = "0.28.1"
 inquire = "0.7.5"
+clap-verbosity-flag = "3.0.2"
 
 [build-dependencies]
 version_check = "0.9.5"
@@ -30,6 +31,7 @@ version_check = "0.9.5"
 #codegen-units = 1
 lto = true
 opt-level = "s"
+rpath = false
 #strip = true
 
 [features]

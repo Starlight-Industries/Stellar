@@ -1,5 +1,5 @@
 use std::{fmt::Write as FmtWrite, panic::PanicHookInfo};
-
+use std::process::ExitCode;
 use backtrace::Backtrace;
 use crossterm::style::Stylize;
 use log::info;
@@ -17,7 +17,7 @@ pub fn set_panic_hook() {
             if !log_path.exists() {
                 std::fs::create_dir_all(&log_path).unwrap_or_else(|_| {
                     default_hook(info);
-                    std::process::exit(0);
+                    std::process::exit(1);
                 })
             }
             let log_path = log_path.join("panic.log");
@@ -29,7 +29,7 @@ pub fn set_panic_hook() {
 
             let mut file = std::fs::File::create(&log_path).unwrap_or_else(|_| {
                 default_hook(info);
-                std::process::exit(0);
+                std::process::exit(1);
             });
             #[cfg(feature = "nightly")]
             writeln!(file, "{}", info.payload_as_str().unwrap_or_else(|| {
@@ -41,8 +41,9 @@ pub fn set_panic_hook() {
             });
             writeln!(file, "{}", render_backtrace().sanitize_path()).unwrap_or_else(|_| {
                 default_hook(info);
-                std::process::exit(0);
+                std::process::exit(1);
             });
+            let panic_str: Option<&&str> = info.payload().downcast_ref::<&str>();
             let panic_msg = format!(
                 "Stellar had a problem and crashed. To help us diagnose the problem you can send us a crash report.
 
@@ -56,30 +57,17 @@ We take privacy seriously, and do not perform any automated error collection. In
 
 Thank you kindly!",log_path.display());
             eprintln!("{}",panic_msg.red().bold());
-            print_reference(info).unwrap_or_else(|_| {
-                default_hook(info);
-                std::process::exit(0);
-            });
+            if let Some(panic_str) = panic_str {
+                println!("{}\n{}",
+                         "For future reference, the error message was as follows:".bold(),
+                         panic_str.red().bold());
+            }
 
-            std::process::exit(0); // There is nothing to be done at this point, it looks cleaner to exit instead of doing a natural panic
+            std::process::exit(1);
         }));
     });
 }
-#[rustversion::stable]
-fn print_reference(info: &PanicHookInfo) -> Result<(), ()> {
-    Ok(())
-}
-#[rustversion::nightly]
-fn print_reference(info: &PanicHookInfo) -> Result<(), ()> {
-    println!(
-        "\nFor future reference, the error summary is as follows:\n{}",
-        info.payload_as_str()
-            .unwrap_or("No error message provided")
-            .red()
-            .bold()
-    );
-    Ok(())
-}
+
 // THIS SNIPPET IS LICENSED UNDER THE APACHE LICENSE, VERSION 2.0
 // https://github.com/rust-cli/human-panic
 // No changes were made to the original snippet

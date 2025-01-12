@@ -1,12 +1,13 @@
 use std::fmt::Formatter;
 use std::path::Path;
+use std::str::FromStr;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum IdentityError {
     #[error("Unknown distro/variant {expected} got {got}")]
     UnknownVariant { expected: Distro, got: String },
-    #[error("Invalid value")]
+    #[error("Invalid distro/variant: {value}")]
     Invalid { value: String },
     #[error("Failed to read file: {reason}")]
     ReadFailure {
@@ -32,6 +33,27 @@ pub enum Distro {
     Other(String),
 }
 
+impl FromStr for Distro {
+    type Err = IdentityError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "debian" => Ok(Distro::Debian),
+            "ubuntu" => Ok(Distro::Debian),
+            "arch" => Ok(Distro::Arch),
+            "centos" => Ok(Distro::Redhat),
+            "rhel" => Ok(Distro::Redhat),
+            "fedora" => Ok(Distro::Redhat),
+            "rocky" => Ok(Distro::Redhat),
+            "opensuse-leap" => Ok(Distro::Suse),
+            "opensuse" => Ok(Distro::Suse),
+            _ => Err(IdentityError::Invalid {
+                value: s.to_string(),
+            }),
+        }
+    }
+}
+
 impl Distro {
     // pub fn is_debian(&self) -> bool {}
     pub fn is_supported(&self) -> bool {
@@ -42,6 +64,15 @@ impl Distro {
             Distro::Suse => false,
             Distro::Other(_) => true,
         }
+    }
+    pub fn All() -> Vec<Self> {
+        let vec = vec![
+            Distro::Debian,
+            Distro::Arch,
+            Distro::Redhat,
+            Distro::Suse,
+        ];
+        vec
     }
 }
 

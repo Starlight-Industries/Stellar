@@ -1,6 +1,7 @@
 use std::fmt::Formatter;
 use std::path::Path;
 use std::str::FromStr;
+
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -66,13 +67,16 @@ impl Distro {
             Distro::Other(_) => true,
         }
     }
+
     pub fn variants() -> Vec<Self> {
         let vec = vec![Distro::Debian, Distro::Arch, Distro::Redhat, Distro::Suse];
         vec
     }
+
     pub fn is_available(&self) -> bool {
         false
     }
+
     pub fn to_string_pretty(&self) -> String {
         match self {
             Distro::Debian => String::from("Debian"),

@@ -1,6 +1,5 @@
 use clap::{Error, Parser, ValueEnum};
 use clap_verbosity_flag::{Verbosity, VerbosityFilter};
-use crossterm::style::Stylize;
 use libstellar::env::Distro;
 use log::{debug, error, info, LevelFilter};
 // pub mod commands;

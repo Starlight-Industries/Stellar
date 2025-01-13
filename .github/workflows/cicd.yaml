@@ -70,7 +70,7 @@ jobs:
         run: cargo test --workspace
 
       - name: Formatting check
-        run: cargo +nightly fmt --all --check
+        run: rustup toolchain install nightly && rustup component add rustfmt --toolchain nightly && cargo +nightly fmt --all --check
 
       - name: Clippy check
         run: cargo clippy --all-targets --workspace -- -D warnings
@@ -103,7 +103,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
-      - uses: dtolnay/rust-toolchain@nightly
         with:
           targets: ${{ matrix.target }}
       - uses: Swatinem/rust-cache@v2

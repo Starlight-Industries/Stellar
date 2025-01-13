@@ -13,13 +13,7 @@ serde = { version = "1.0.217", features = ["derive"] }
 serde = "^1"
 
 [target.'cfg(feature = "tokio")'.dependencies]
-
-[profile.release]
-#codegen-units = 1
-lto = true
-opt-level = "s"
-#strip = true
-
+tokio = "^1.43"
 [features]
 default = []
 serde = []

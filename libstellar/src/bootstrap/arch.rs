@@ -1,5 +1,4 @@
-use thiserror::Error;
-// struct Architecture {}
+
 // struct Pacstrap {
 //     packages: Vec<String>,
 // }

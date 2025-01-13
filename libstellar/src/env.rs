@@ -1,8 +1,9 @@
 use std::fmt::Formatter;
 use std::path::Path;
 use std::str::FromStr;
-
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
+
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -33,7 +34,7 @@ pub enum Distro {
     ///
     /// Running ```is_supported()``` on the ```Other``` variant
     /// will return true, however; this will require custom instructions
-    /// or more manual intervention than usually necessary
+    /// or more manual intervention than usually necessary.
     Other(String),
 }
 

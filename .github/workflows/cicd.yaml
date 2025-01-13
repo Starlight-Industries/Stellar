@@ -68,9 +68,13 @@ jobs:
 
       - name: Run tests
         run: cargo test --workspace
+      - name: Install nightly rust
+        run: rustup toolchain install nightly
+      - name: Install nightly rustfmt
+        run: rustup component add rustfmt --toolchain nightly
 
       - name: Formatting check
-        run: rustup toolchain install nightly && rustup component add rustfmt --toolchain nightly && cargo +nightly fmt --all --check
+        run: cargo +nightly fmt --all --check
 
       - name: Clippy check
         run: cargo clippy --all-targets --workspace -- -D warnings

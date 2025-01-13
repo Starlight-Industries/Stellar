@@ -2,6 +2,7 @@ use std::fmt::Formatter;
 use std::path::Path;
 use std::str::FromStr;
 
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -19,12 +20,14 @@ pub enum IdentityError {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[non_exhaustive]
 pub enum Distro {
     Debian,
     Arch,
     Redhat,
     Suse,
+    Gentoo,
     /// Other will include unknown or independent Linux/Unix variants
     /// Such as NixOS or Void Linux.
     ///
@@ -62,6 +65,7 @@ impl Distro {
         match self {
             Distro::Debian => true,
             Distro::Arch => true,
+            Distro::Gentoo => true,
             Distro::Redhat => false,
             Distro::Suse => false,
             Distro::Other(_) => true,
@@ -83,6 +87,7 @@ impl Distro {
             Distro::Arch => String::from("Arch Linux"),
             Distro::Redhat => String::from("RedHat Linux"),
             Distro::Suse => String::from("OpenSuse"),
+            Distro::Gentoo => String::from("Gentoo"),
             Distro::Other(_) => String::from("Other Linux"),
         }
     }
@@ -95,6 +100,7 @@ impl std::fmt::Display for Distro {
             Distro::Arch => "Arch",
             Distro::Redhat => "Redhat",
             Distro::Suse => "Suse",
+            &Distro::Gentoo => "Gentoo",
             Distro::Other(s) => s,
         };
         write!(f, "{}", string)
@@ -123,7 +129,7 @@ pub fn current_distro() -> Result<Distro, IdentityError> {
                 .find(|line| line.starts_with("ID="))
                 .and_then(|line| line.split('=').nth(1))
                 .unwrap_or("Unknown");
-            match ident {
+            match ident.to_lowercase().as_str() {
                 "debian" => Ok(Distro::Debian),
                 "ubuntu" => Ok(Distro::Debian),
                 "arch" => Ok(Distro::Arch),

@@ -1,5 +1,6 @@
 #![cfg_attr(feature = "nightly", feature(panic_payload_as_str))]
-#![forbid(unused_results)]
+#![deny(unused_results)]
+#![allow(missing_docs)]
 
 pub mod cli;
 pub mod panic;

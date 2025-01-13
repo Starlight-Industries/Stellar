@@ -35,7 +35,7 @@ where
 }
 #[derive(Debug, Error, PartialEq)]
 pub enum BootstrapError {
-    #[error("Package {got} Was not found. Did you mean {}",
+    #[error("Package {got} Was not found. Did you mean {}?",
     closest_matches.join("\n"))]
     UnknownPackage {
         got: String,

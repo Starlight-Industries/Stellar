@@ -1,4 +1,3 @@
-
 // struct Pacstrap {
 //     packages: Vec<String>,
 // }

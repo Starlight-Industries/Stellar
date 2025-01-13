@@ -1,9 +1,9 @@
 use std::fmt::Formatter;
 use std::path::Path;
 use std::str::FromStr;
+
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
-
 use thiserror::Error;
 
 #[derive(Debug, Error)]

@@ -13,34 +13,39 @@ pub fn set_panic_hook() {
         std::panic::set_hook(Box::new(move |info| {
 			let panic_str: Option<&&str> = info.payload().downcast_ref::<&str>();
             let log_path = std::path::Path::new("./");
-            let log_path = log_path.canonicalize().expect("Failed to obtain absolute path");
-            if !log_path.exists() {
-                std::fs::create_dir_all(&log_path).unwrap_or_else(|_| {
-                    default_hook(info);
-                    std::process::exit(1);
-                })
-            }
-            let log_path = log_path.join("panic.log");
+            let log_path = log_path.canonicalize();
+			match log_path {
+				Ok(ref path) => if path.exists() {
+					std::fs::create_dir_all(&path).unwrap_or_else(|_| {
+						default_hook(info);
+						std::process::exit(1);
+						
+					});
+					let mut file = std::fs::File::create(&path).unwrap_or_else(|_| {
+						default_hook(info);
+						std::process::exit(1);
+					});
+					if panic_str.is_some() {
+						writeln!(file, "{}", panic_str.unwrap()).unwrap_or_else(|_| {
+							default_hook(info);
+							std::process::exit(1);
+						});
+					}
+					writeln!(file, "{}", render_backtrace().sanitize_path()).unwrap_or_else(|_| {
+						default_hook(info);
+						std::process::exit(1);
+					});
+				},
+				Err(_) => todo!(),
+			}
+
 
             // human_panic::print_msg::<PathBuf>(Some(log_path), &human_panic::Metadata::new("Stellar", env!("CARGO_PKG_VERSION"))
             // .support("https://github.com/Stellar-Engine/Stellar/issues")
             // .authors("Stellar community <https://github.com/Stellar-Engine>")).unwrap();
             // // Call the default hook for any additional actions
 
-            let mut file = std::fs::File::create(&log_path).unwrap_or_else(|_| {
-                default_hook(info);
-                std::process::exit(1);
-            });
-			if panic_str.is_some() {
-				writeln!(file, "{}", panic_str.unwrap()).unwrap_or_else(|_| {
-					default_hook(info);
-					std::process::exit(1);
-				});
-			}
-			writeln!(file, "{}", render_backtrace().sanitize_path()).unwrap_or_else(|_| {
-                default_hook(info);
-                std::process::exit(1);
-            });
+
 
             let panic_msg = format!(
                 "Stellar had a problem and crashed. To help us diagnose the problem you can send us a crash report.
@@ -53,7 +58,9 @@ https://github.com/Starlight-industries/Stellar/issues
 
 We take privacy seriously, and do not perform any automated error collection. In order to improve the software, we rely on people to submit reports.
 
-Thank you kindly!",log_path.display());
+Thank you kindly!",log_path.unwrap_or_else(|_| {
+	"Unknown".into()
+}).display());
             eprintln!("{}",panic_msg.red().bold());
             if let Some(panic_str) = panic_str {
                 println!("{}\n{}",

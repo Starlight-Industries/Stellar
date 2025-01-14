@@ -61,6 +61,22 @@ async fn match_distro(distro: Distro) {
 			// }
 			let test = Chroot::new("t");
 
+			let result = std::os::unix::fs::chroot("test/chroot");
+			match result {
+				Ok(_) => {
+					let result = std::env::set_current_dir("test/chroot");
+					match result {
+							Ok(_) => {
+								println!("{}",std::env::current_dir().unwrap().display())
+							},
+							Err(e) => panic!("asdojfhasdk"),
+						}
+				},
+				Err(e) => {
+					error!("{e}");
+				},
+			}
+
 		}
 		Distro::Gentoo => {
 			info!("Gentoo")

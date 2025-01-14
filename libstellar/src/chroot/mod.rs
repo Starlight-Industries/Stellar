@@ -25,7 +25,7 @@ impl Chroot {
         let val = Self {
             directory
         };
+        
         Ok(val)
-
     }
 }

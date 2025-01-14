@@ -2,7 +2,7 @@ use std::fs;
 
 use clap::Parser;
 use clap_verbosity_flag::Verbosity;
-use libstellar::bootstrap::arch::Pacstrap;
+use libstellar::{bootstrap::arch::Pacstrap, chroot::Chroot};
 use libstellar::bootstrap::Bootstrap;
 use libstellar::env::Distro;
 use log::{debug, error, info, LevelFilter};
@@ -44,21 +44,22 @@ async fn match_distro(distro: Distro) {
 		}
 		Distro::Arch => {
 			info!("Arch");
-			let mut bootstrapper = Pacstrap::default();
-			bootstrapper.add_package("base").await.unwrap();
-			bootstrapper.add_package("base-devel").await.unwrap();
-			bootstrapper.add_package("pipewire").await.unwrap();
-			bootstrapper.add_package("plasma-meta").await.unwrap();
-			let result = fs::create_dir_all("./test/chroot");
-			match result {
-				Ok(_) => {
-					bootstrapper.bootstrap("./test/chroot").unwrap();
-				}
-				Err(e) => {
-					error!("{}",e);
-					todo!()
-				}
-			}
+			// let mut bootstrapper = Pacstrap::default();
+			// bootstrapper.add_package("base").await.unwrap();
+			// bootstrapper.add_package("base-devel").await.unwrap();
+			// bootstrapper.add_package("pipewire").await.unwrap();
+			// bootstrapper.add_package("plasma-meta").await.unwrap();
+			// let result = fs::create_dir_all("./test/chroot");
+			// match result {
+			// 	Ok(_) => {
+			// 		bootstrapper.bootstrap("./test/chroot").unwrap();
+			// 	}
+			// 	Err(e) => {
+			// 		error!("{}",e);
+			// 		todo!()
+			// 	}
+			// }
+			let test = Chroot::new("t");
 
 		}
 		Distro::Gentoo => {

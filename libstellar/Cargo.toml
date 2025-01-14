@@ -6,15 +6,12 @@ edition = "2021"
 [dependencies]
 async-trait = "^0.1.85"
 thiserror = "^2.0.11"
-serde = { version = "1.0.217", features = ["derive"] }
-
-[target.'cfg(feature = "serde")'.dependencies]
-serde = "^1"
-
-[target.'cfg(feature = "tokio")'.dependencies]
-tokio = "^1.43"
+serde = { version = "1.0.217", features = ["derive"],optional = true }
+tokio = {version =  "^1.43",optional = true }
 
 [features]
 default = []
-serde = []
-tokio = []
+serde = ["dep:serde"]
+tokio = ["dep:tokio"]
+archlinux = []
+debian = []

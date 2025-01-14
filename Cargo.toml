@@ -8,7 +8,7 @@ authors = ["starlight-industries", "Caznix", "Eatmynerds"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
-libstellar.workspace = true
+libstellar =  { workspace = true,features = ["archlinux","debian"]}
 anyhow = { version = "1" }
 clap = { version = "4.5.26", features = ["derive"] }
 log = "0.4"
@@ -24,17 +24,24 @@ inquire = "0.7.5"
 clap-verbosity-flag = "3.0.2"
 reqwest = "0.12.12"
 async-trait = "0.1.85"
+tokio = { version = "1.43.0", features = ["macros", "rt-multi-thread"] }
 
 [build-dependencies]
 version_check = "0.9.5"
 
 # See more at https://github.com/johnthagen/min-sized-rust
 [profile.release]
-#codegen-units = 1
-lto = true
+codegen-units = 1
+lto = "fat"
 opt-level = "s"
 rpath = false
 #strip = true
+
+[profile.dev]
+codegen-units = 512
+opt-level = 0
+panic = "abort"
+incremental = true
 
 [features]
 default = []

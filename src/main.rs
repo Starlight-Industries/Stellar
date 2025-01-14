@@ -5,11 +5,11 @@
 pub mod cli;
 pub mod panic;
 use crate::cli::run_cli;
-
-fn main() {
-    #[cfg(not(debug_assertions))]
-    {
-        panic::set_panic_hook();
-    }
-    run_cli();
+#[tokio::main]
+async fn main() {	
+	#[cfg(not(debug_assertions))]
+	{
+		panic::set_panic_hook();
+	}
+	run_cli().await;
 }
